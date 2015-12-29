@@ -6,6 +6,8 @@ An isometric drawing library for Purescript.
 
 ![](preview.png)
 
+[Live demo](http://sharkdp.github.io/purescript-isometric/)
+
 ## Build tests
 ```
 bower install
