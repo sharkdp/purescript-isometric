@@ -1,101 +1,5 @@
 ## Module Graphics.Isometric
 
-#### `Point`
-
-``` purescript
-type Point = { x :: Number, y :: Number, z :: Number }
-```
-
-A 3D point.
-
-#### `Vector`
-
-``` purescript
-type Vector = Point
-```
-
-A vector or direction.
-
-#### `Angle`
-
-``` purescript
-type Angle = Number
-```
-
-An angle in radians.
-
-#### `isometricAngle`
-
-``` purescript
-isometricAngle :: Angle
-```
-
-The rotation angle that leads to a symmetric viewpoint.
-
-#### `point`
-
-``` purescript
-point :: Number -> Number -> Number -> Point
-```
-
-Construct a point from x, y, and z coordinates.
-
-#### `origin`
-
-``` purescript
-origin :: Point
-```
-
-The origin of the 3D coordinate system.
-
-#### `translateX`
-
-``` purescript
-translateX :: Number -> Point -> Point
-```
-
-Translate a point by a given offset in x-direction.
-
-#### `translateY`
-
-``` purescript
-translateY :: Number -> Point -> Point
-```
-
-Translate a point by a given offset in y-direction.
-
-#### `translateZ`
-
-``` purescript
-translateZ :: Number -> Point -> Point
-```
-
-Translate a point by a given offset in z-direction.
-
-#### `rotateX`
-
-``` purescript
-rotateX :: Angle -> Point -> Point
-```
-
-Rotate a point around the x-axis.
-
-#### `rotateY`
-
-``` purescript
-rotateY :: Angle -> Point -> Point
-```
-
-Rotate a point around the y-axis.
-
-#### `rotateZ`
-
-``` purescript
-rotateZ :: Angle -> Point -> Point
-```
-
-Rotate a point around the z-axis.
-
 #### `Face`
 
 ``` purescript
@@ -129,6 +33,14 @@ cube :: Point -> Number -> Shape
 
 A cube is a prism with three equal sides.
 
+#### `pyramid`
+
+``` purescript
+pyramid :: Point -> Number -> Number -> Shape
+```
+
+A pyramid, determined by a corner point, base-length and height.
+
 #### `Scene`
 
 ``` purescript
@@ -143,6 +55,62 @@ Semigroup Scene
 Monoid Scene
 ```
 
+#### `translateX`
+
+``` purescript
+translateX :: Angle -> Scene -> Scene
+```
+
+Translate a scene by a given offset in x-direction.
+
+#### `translateY`
+
+``` purescript
+translateY :: Angle -> Scene -> Scene
+```
+
+Translate a scene by a given offset in y-direction.
+
+#### `translateZ`
+
+``` purescript
+translateZ :: Angle -> Scene -> Scene
+```
+
+Translate a scene by a given offset in z-direction.
+
+#### `rotateX`
+
+``` purescript
+rotateX :: Angle -> Scene -> Scene
+```
+
+Rotate a scene around the x-axis.
+
+#### `rotateY`
+
+``` purescript
+rotateY :: Angle -> Scene -> Scene
+```
+
+Rotate a scene around the y-axis.
+
+#### `rotateZ`
+
+``` purescript
+rotateZ :: Angle -> Scene -> Scene
+```
+
+Rotate a scene around the z-axis.
+
+#### `scale`
+
+``` purescript
+scale :: Number -> Scene -> Scene
+```
+
+Scale a scene by a multiplicative factor (with respect to the origin).
+
 #### `filled`
 
 ``` purescript
@@ -154,12 +122,10 @@ Fill a shape with a given base color. Individual faces can be brighter.
 #### `renderScene`
 
 ``` purescript
-renderScene :: Angle -> Vector -> Scene -> Drawing
+renderScene :: Vector -> Scene -> Drawing
 ```
 
-Render a three-dimensional `Scene` into a two-dimensional `Drawing`,
-using an isometric projection. The angle determines the projection angle
-(rotation around the horizontal axis) and the vector determines the
-direction of light.
+Render a three-dimensional `Scene` into a two-dimensional `Drawing`, using
+an isometric projection. The vector determines the direction of light.
 
 
