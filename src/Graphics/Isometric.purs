@@ -4,7 +4,7 @@ module Graphics.Isometric
   , prism
   , cube
   , pyramid
-  , Scene()
+  , Scene(..)
   , translateX
   , translateY
   , translateZ

@@ -45,6 +45,8 @@ A pyramid, determined by a corner point, base-length and height.
 
 ``` purescript
 data Scene
+  = Fill Color Shape
+  | Many (List Scene)
 ```
 
 Main data type for the description of a 3D isometric scene.

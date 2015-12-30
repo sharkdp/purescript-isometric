@@ -17,11 +17,13 @@
   },
   "dependencies": {
     "purescript-drawing": "^0.3.8",
-    "purescript-orders": "^0.1.1"
+    "purescript-orders": "^0.1.1",
+    "purescript-graphs": "^0.5.0"
   },
   "resolutions": {
-    "purescript-canvas": "~0.4.0",
-    "purescript-strings": "^0.7.0"
+    "purescript-canvas": "^0.4.0",
+    "purescript-strings": "^0.7.0",
+    "purescript-maps": "^0.5.0"
   },
   "devDependencies": {
     "purescript-flare": "^0.4.0"
