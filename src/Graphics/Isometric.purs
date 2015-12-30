@@ -20,7 +20,7 @@ module Graphics.Isometric
 
 import Prelude
 
-import Data.Array (sortBy, cons, (..))
+import Data.Array (sortBy, cons, (..), reverse)
 import Data.Array.Unsafe (unsafeIndex)
 import Data.Foldable (foldMap, sum)
 import Data.Int (toNumber)
@@ -46,9 +46,9 @@ type Shape = Array Face
 -- | A prism, constructed from a given corner point and the width, height and
 -- | depth (dimensions in x, y, and z-direction).
 prism :: Point -> Number -> Number -> Number -> Shape
-prism p dx dy dz = [ faceZ, P.translateZ dz <$> faceZ
-                   , faceY, P.translateY dy <$> faceY
-                   , faceX, P.translateX dx <$> faceX]
+prism p dx dy dz = [ reverse faceZ, P.translateZ dz <$> faceZ
+                   , reverse faceY, P.translateY dy <$> faceY
+                   , reverse faceX, P.translateX dx <$> faceX]
   where faceZ = [ point p.x p.y p.z, point (p.x + dx) p.y p.z
                 , point (p.x + dx) (p.y + dy) p.z, point p.x (p.y + dy) p.z ]
         faceY = [ point p.x p.y p.z, point p.x p.y (p.z + dz)
