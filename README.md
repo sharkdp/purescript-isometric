@@ -2,11 +2,9 @@
 
 An isometric drawing library for Purescript.
 
-***(work in progress)***
+[**Live demo**](http://sharkdp.github.io/purescript-isometric/)
 
 ![](preview.png)
-
-[Live demo](http://sharkdp.github.io/purescript-isometric/)
 
 ## Build tests
 ```
