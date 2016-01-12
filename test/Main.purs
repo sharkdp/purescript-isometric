@@ -7,7 +7,8 @@ import Data.Foldable (foldMap, fold)
 import Data.Int (toNumber)
 
 import Graphics.Isometric (Point, Color, cube, hsl, filled, rotateZ, scale,
-                           renderScene, prism, gray)
+                           renderScene, prism, gray, black, translateX,
+                           translateY)
 import Graphics.Isometric.Point as P
 import Graphics.Isometric.DepthSort (depthSort)
 
@@ -60,18 +61,41 @@ scene2 rotZ time =
 p :: Int -> Int -> Int -> Point
 p x y z = { x: toNumber x, y: toNumber y, z: toNumber z }
 
+blue :: Color
+blue = hsl 210.0 0.8 0.5
+
 scene3 :: Number -> D.Drawing
 scene3 angle =
   D.translate 300.0 150.0 $
     renderScene { x: -4.0, y: -1.0, z: 3.0 } $
       scale 45.0 $ rotateZ angle $
-        foldMap (\pos -> filled (hsl 210.0 0.8 0.5) (cube pos 1.0))
+        foldMap (\pos -> filled blue (cube pos 1.0))
           [ p 1 1 0 , p 1 2 0 , p 1 3 0 , p 2 3 0
           , p 3 3 0 , p 0 (-2) 0 , p 1 (-2) 0 , p 2 (-2) 0
           , p 3 (-2) 0 , p 3 (-1) 0 , p 4 (-1) 0 , p 5 (-1) 0
           , p 5 (-1) 0 , p 5 0 0 , p 4 2 0 , p 5 1 0
           , p 5 2 0 , p 4 3 0 , p 1 0 1 , p 1 1 1
           ]
+
+-- Example 4
+
+yellow :: Color
+yellow = hsl 40.0 0.9 0.6
+
+scene4 :: Number -> Number -> D.Drawing
+scene4 theta phi =
+  D.translate 250.0 200.0 $
+    renderScene { x: lx, y: ly, z: lz } $
+      scale 150.0 $
+        filled yellow (cube { x: r * lx, y: r * ly, z: r * lz } 0.05)
+        <> filled black (cube P.origin 1.0)
+        <> move (filled red (cube P.origin 0.4))
+  where
+    lx = sin theta * cos phi
+    ly = sin theta * sin phi
+    lz = cos theta
+    r = 1.4
+    move = rotateZ 0.4 >>> translateY 1.1 >>> translateX 0.3
 
 main = do
   D.runFlareDrawing "controls1" "canvas1" $
@@ -84,3 +108,7 @@ main = do
 
   D.runFlareDrawing "controls3" "canvas3" $
     scene3 <$> numberSlider "Rotation" (-0.25 * pi) (0.25 * pi) 0.01 0.0
+
+  D.runFlareDrawing "controls4" "canvas4" $
+    scene4 <$> (pure 0.0015 * lift animationFrame)
+           <*> pure (- pi / 3.0)
