@@ -7,8 +7,8 @@ import Data.Foldable (foldMap, fold)
 import Data.Int (toNumber)
 
 import Graphics.Isometric (Point, Color, cube, hsl, filled, rotateZ, scale,
-                           renderScene, prism, gray, black, translateX,
-                           translateY)
+                           renderScene, prism, pyramid3, gray, black, translateX,
+                           translateY, cylinder, cone)
 import Graphics.Isometric.Point as P
 import Graphics.Isometric.DepthSort (depthSort)
 
@@ -79,18 +79,22 @@ scene3 angle =
 
 -- Example 4
 
+magenta :: Color
+magenta = hsl 320.0 0.8 0.30
+
 yellow :: Color
 yellow = hsl 40.0 0.9 0.6
 
-scene4 :: Number -> Number -> D.Drawing
-scene4 theta phi =
+scene4 :: Number -> D.Drawing
+scene4 phi =
   D.translate 250.0 200.0 $
     renderScene { x: lx, y: ly, z: lz } $
       scale 150.0 $
-        filled yellow (cube { x: r * lx, y: r * ly, z: r * lz } 0.05)
-        <> filled black (cube P.origin 1.0)
-        <> move (filled red (cube P.origin 0.4))
+        filled magenta (cone P.origin 20 1.0 1.5)
+        <> move (filled blue (cube P.origin 0.4))
+        <> filled yellow (cube { x: r * lx, y: r * ly, z: r * lz } 0.05)
   where
+    theta = pi / 3.0
     lx = sin theta * cos phi
     ly = sin theta * sin phi
     lz = cos theta
@@ -111,4 +115,3 @@ main = do
 
   D.runFlareDrawing "controls4" "canvas4" $
     scene4 <$> (pure 0.0015 * lift animationFrame)
-           <*> pure (- pi / 3.0)

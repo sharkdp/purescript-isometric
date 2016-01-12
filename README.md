@@ -2,6 +2,12 @@
 
 An isometric drawing library for Purescript.
 
+**Features**:
+- Basic shapes: cube, prism, cylinder, cone, pyramid
+- Extrusions from 2D paths
+- Scaling, Translation, Rotation
+- Depth sorting
+
 [**Live demo**](http://sharkdp.github.io/purescript-isometric/)
 
 ![](preview.png)

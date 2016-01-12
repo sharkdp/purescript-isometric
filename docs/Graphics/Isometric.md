@@ -16,6 +16,23 @@ type Shape = Array Face
 
 A Shape consists of several `Face`s.
 
+#### `extrude`
+
+``` purescript
+extrude :: Array Point -> Number -> Shape
+```
+
+Project a 2D path onto the xy plane and extrude it by the given height.
+
+#### `extrudeCone`
+
+``` purescript
+extrudeCone :: Array Point -> Number -> Shape
+```
+
+Create a cone-like object by extruding the points from a base path in the
+xy plane to a single point above it.
+
 #### `prism`
 
 ``` purescript
@@ -33,13 +50,41 @@ cube :: Point -> Number -> Shape
 
 A cube is a prism with three equal sides.
 
+#### `cone`
+
+``` purescript
+cone :: Point -> Int -> Number -> Number -> Shape
+```
+
+A cone, determined by the center of the bottom face, the number of sides,
+the radius and the height.
+
 #### `pyramid`
 
 ``` purescript
 pyramid :: Point -> Number -> Number -> Shape
 ```
 
-A pyramid, determined by a corner point, base-length and height.
+A four-sided pyramid, determined by the center of the bottom face, the
+base length and the height.
+
+#### `pyramid3`
+
+``` purescript
+pyramid3 :: Point -> Number -> Number -> Shape
+```
+
+A three-sided pyramid, determined by the center of the bottom face, the
+base length and the height.
+
+#### `cylinder`
+
+``` purescript
+cylinder :: Point -> Int -> Number -> Number -> Shape
+```
+
+A cylinder, determined by the center of the bottom face, the number of
+sides, the radius and the height.
 
 #### `Scene`
 
@@ -60,7 +105,7 @@ Monoid Scene
 #### `translateX`
 
 ``` purescript
-translateX :: Angle -> Scene -> Scene
+translateX :: Number -> Scene -> Scene
 ```
 
 Translate a scene by a given offset in x-direction.
@@ -68,7 +113,7 @@ Translate a scene by a given offset in x-direction.
 #### `translateY`
 
 ``` purescript
-translateY :: Angle -> Scene -> Scene
+translateY :: Number -> Scene -> Scene
 ```
 
 Translate a scene by a given offset in y-direction.
@@ -76,7 +121,7 @@ Translate a scene by a given offset in y-direction.
 #### `translateZ`
 
 ``` purescript
-translateZ :: Angle -> Scene -> Scene
+translateZ :: Number -> Scene -> Scene
 ```
 
 Translate a scene by a given offset in z-direction.

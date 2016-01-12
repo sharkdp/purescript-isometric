@@ -1,9 +1,14 @@
 module Graphics.Isometric
   ( Face()
   , Shape()
+  , extrude
+  , extrudeCone
   , prism
   , cube
+  , cone
   , pyramid
+  , pyramid3
+  , cylinder
   , Scene(..)
   , translateX
   , translateY
@@ -20,20 +25,21 @@ module Graphics.Isometric
 
 import Prelude
 
-import Data.Array (sortBy, cons, (..), reverse)
-import Data.Array.Unsafe (unsafeIndex)
+import Data.Array (sortBy, cons, (..), reverse, zipWith)
+import Data.Array.Unsafe (unsafeIndex, last)
 import Data.Foldable (foldMap, sum)
 import Data.Int (toNumber)
 import Data.List (List(..), singleton, (:))
-import Data.Monoid (Monoid, mempty)
+import Data.Monoid (class Monoid, mempty)
 import Data.Ord (comparing)
 
-import Math (pi, asin, sqrt)
+import Math (pi, asin, sqrt, sin, cos)
 
 import Graphics.Drawing as TwoD
 import Graphics.Drawing.Color
 
-import Graphics.Isometric.Point (point, vector, dot, normalize, cross, depth)
+import Graphics.Isometric.Point (point, vector, dot, normalize, cross, depth,
+                                 from2D)
 import Graphics.Isometric.Point as P
 import Graphics.Isometric.Types
 
@@ -43,31 +49,69 @@ type Face = Array Point
 -- | A Shape consists of several `Face`s.
 type Shape = Array Face
 
+-- | Project a 2D path onto the xy plane and extrude it by the given height.
+extrude :: Array TwoD.Point -> Number -> Shape
+extrude path2D height = [bottom, reverse top] <> sides
+  where path = from2D <$> path2D
+        bottom = path
+        top = raise <$> bottom
+        sides = zipWith side path (last path `cons` path)
+        side p1 p2 = [p1, p2, raise p2, raise p1]
+        raise = P.translateZ height
+
+-- | Create a cone-like object by extruding the points from a base path in the
+-- | xy plane to a single point above it.
+extrudeCone :: Array TwoD.Point -> Number -> Shape
+extrudeCone path2D height = bottom `cons` sides
+  where path = from2D <$> path2D
+        bottom = path
+        sides = zipWith side path (last path `cons` path)
+        side p1 p2 = [p1, p2, tip]
+        tip = { x: 0.0, y: 0.0, z: height }
+
+-- | Move a given shape by a vector.
+move :: Vector -> Shape -> Shape
+move v = map (map (P.translate v))
+
 -- | A prism, constructed from a given corner point and the width, height and
 -- | depth (dimensions in x, y, and z-direction).
 prism :: Point -> Number -> Number -> Number -> Shape
-prism p dx dy dz = [ reverse faceZ, P.translateZ dz <$> faceZ
-                   , reverse faceY, P.translateY dy <$> faceY
-                   , reverse faceX, P.translateX dx <$> faceX]
-  where faceZ = [ point p.x p.y p.z, point (p.x + dx) p.y p.z
-                , point (p.x + dx) (p.y + dy) p.z, point p.x (p.y + dy) p.z ]
-        faceY = [ point p.x p.y p.z, point p.x p.y (p.z + dz)
-                , point (p.x + dx) p.y (p.z + dz), point (p.x + dx) p.y p.z ]
-        faceX = [ point p.x p.y p.z, point p.x (p.y + dy) p.z
-                , point p.x (p.y + dy) (p.z + dz), point p.x p.y (p.z + dz) ]
+prism p dx dy dz = move p $ extrude rectangle dz
+  where rectangle = [ { x: 0.0, y: 0.0 }
+                    , { x: 0.0, y: dy  }
+                    , { x: dx,  y: dy  }
+                    , { x: dx,  y: 0.0 } ]
 
 -- | A cube is a prism with three equal sides.
 cube :: Point -> Number -> Shape
 cube p dl = prism p dl dl dl
 
--- | A pyramid, determined by a corner point, base-length and height.
+-- | Draw a (2D) polygon with a given radius and number of vertices.
+polygon :: Int -> Number -> Array TwoD.Point
+polygon num r = do
+  j <- 0 .. (num - 1)
+  let phi = - 2.0 * pi / toNumber num * toNumber j
+  return { x: r * cos phi, y : r * sin phi }
+
+-- | A cone, determined by the center of the bottom face, the number of sides,
+-- | the radius and the height.
+cone :: Point -> Int -> Number -> Number -> Shape
+cone p num r height = move p $ extrudeCone (polygon num r) height
+
+-- | A four-sided pyramid, determined by the center of the bottom face, the
+-- | base length and the height.
 pyramid :: Point -> Number -> Number -> Shape
-pyramid p w h = base `cons` map side (0..3)
-  where base     = map corner (0..3)
-        corner n = rot n (point w2 w2 0.0)
-        side n   = rot n <$> [point (-w2) w2 0.0, point 0.0 0.0 h, point w2 w2 0.0]
-        rot n    = P.rotateZ (pi / 2.0 * toNumber n)
-        w2       = w / 2.0
+pyramid p = cone p 4
+
+-- | A three-sided pyramid, determined by the center of the bottom face, the
+-- | base length and the height.
+pyramid3 :: Point -> Number -> Number -> Shape
+pyramid3 p len = cone p 3 (len * sqrt 3.0 / 3.0)
+
+-- | A cylinder, determined by the center of the bottom face, the number of
+-- | sides, the radius and the height.
+cylinder :: Point -> Int -> Number -> Number -> Shape
+cylinder p num r height = move p $ extrude (polygon num r) height
 
 -- | Main data type for the description of a 3D isometric scene.
 data Scene = Fill Color Shape
@@ -89,15 +133,15 @@ transform t = go
     go (Many ss) = Many (transform t <$> ss)
 
 -- | Translate a scene by a given offset in x-direction.
-translateX :: Angle -> Scene -> Scene
+translateX :: Number -> Scene -> Scene
 translateX dx = transform (P.translateX dx)
 
 -- | Translate a scene by a given offset in y-direction.
-translateY :: Angle -> Scene -> Scene
+translateY :: Number -> Scene -> Scene
 translateY dy = transform (P.translateY dy)
 
 -- | Translate a scene by a given offset in z-direction.
-translateZ :: Angle -> Scene -> Scene
+translateZ :: Number -> Scene -> Scene
 translateZ dz = transform (P.translateZ dz)
 
 -- | Rotate a scene around the x-axis.

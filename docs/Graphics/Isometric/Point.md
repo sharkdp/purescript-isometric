@@ -16,6 +16,14 @@ origin :: Point
 
 The origin of the 3D coordinate system.
 
+#### `from2D`
+
+``` purescript
+from2D :: Point -> Point
+```
+
+Construct a 3D point in the xy plane from a 2D point.
+
 #### `vector`
 
 ``` purescript
@@ -23,6 +31,14 @@ vector :: Point -> Point -> Vector
 ```
 
 Construct a vector as a difference between two points.
+
+#### `translate`
+
+``` purescript
+translate :: Point -> Vector -> Point
+```
+
+Translate a given point by a vector.
 
 #### `dot`
 

@@ -1,7 +1,9 @@
 module Graphics.Isometric.Point
   ( point
   , origin
+  , from2D
   , vector
+  , translate
   , dot
   , norm
   , normalize
@@ -20,7 +22,8 @@ import Prelude
 
 import Math (sin, cos, sqrt)
 
-import Graphics.Isometric.Types
+import Graphics.Isometric.Types (Point, Angle, Vector)
+import Graphics.Drawing as TwoD
 
 -- | Construct a point from x, y, and z coordinates.
 point :: Number -> Number -> Number -> Point
@@ -30,12 +33,23 @@ point x y z = { x, y, z }
 origin :: Point
 origin = { x: 0.0, y: 0.0, z: 0.0 }
 
+-- | Construct a 3D point in the xy plane from a 2D point.
+from2D :: TwoD.Point -> Point
+from2D { x, y } = { x, y, z: 0.0 }
+
 -- | Construct a vector as a difference between two points.
 vector :: Point -> Point -> Vector
 vector { x: x1, y: y1, z: z1 } { x: x2, y: y2, z: z2 } =
   { x: x2 - x1
   , y: y2 - y1
   , z: z2 - z1 }
+
+-- | Translate a given point by a vector.
+translate :: Point -> Vector -> Point
+translate { x: x1, y: y1, z: z1 } { x: x2, y: y2, z: z2 } =
+  { x: x1 + x2
+  , y: y1 + y2
+  , z: z1 + z2 }
 
 -- | The dot-product of two vectors.
 dot :: Vector -> Vector -> Number
