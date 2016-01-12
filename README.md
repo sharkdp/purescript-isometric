@@ -1,6 +1,6 @@
 # purescript-isometric
 
-An isometric drawing library for Purescript.
+An isometric drawing library for PureScript.
 
 **Features**:
 - Basic shapes: cube, prism, cylinder, cone, pyramid
