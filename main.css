@@ -91,10 +91,14 @@ body {
     margin: 40px;
 }
 
+body, p, label {
+    font-size: 17px;
+}
+
 label {
-    font-size: 18px;
     display: inline-block;
-    width: 150px;
+    font-weight: bold;
+    width: 130px;
 }
 
 .flare-input {
