@@ -65,7 +65,7 @@ pyramid :: Point -> Number -> Number -> Shape
 pyramid p w h = base `cons` map side (0..3)
   where base     = map corner (0..3)
         corner n = rot n (point w2 w2 0.0)
-        side n   = rot n <$> [point (-w2) w2 0.0, point w2 w2 0.0, point 0.0 0.0 h]
+        side n   = rot n <$> [point (-w2) w2 0.0, point 0.0 0.0 h, point w2 w2 0.0]
         rot n    = P.rotateZ (pi / 2.0 * toNumber n)
         w2       = w / 2.0
 
