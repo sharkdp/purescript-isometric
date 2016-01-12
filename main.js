@@ -233,6 +233,9 @@ var PS = { };
   var mul = function (dict) {
       return dict.mul;
   };
+  var $times = function (dictSemiring) {
+      return mul(dictSemiring);
+  };
   var map = function (dict) {
       return dict.map;
   };
@@ -414,6 +417,7 @@ var PS = { };
   exports["compare"] = compare;
   exports["=="] = $eq$eq;
   exports["eq"] = eq;
+  exports["*"] = $times;
   exports["+"] = $plus;
   exports["one"] = one;
   exports["mul"] = mul;
@@ -2854,8 +2858,12 @@ var PS = { };
   var applySignal = new Prelude.Apply(function () {
       return functorSignal;
   }, applySig);
+  var applicativeSignal = new Prelude.Applicative(function () {
+      return applySignal;
+  }, $foreign.constant);
   exports["functorSignal"] = functorSignal;
   exports["applySignal"] = applySignal;
+  exports["applicativeSignal"] = applicativeSignal;
   exports["runSignal"] = $foreign.runSignal;
   exports["constant"] = $foreign.constant;;
  
@@ -3008,14 +3016,30 @@ var PS = { };
           return UI(Control_Apply.lift2(Control_Monad_Eff.applyEff)(Prelude.apply(applyFlare))(v)(v1));
       };
   });
+  var applicativeFlare = new Prelude.Applicative(function () {
+      return applyFlare;
+  }, function (x) {
+      return new Flare([  ], Prelude.pure(Signal.applicativeSignal)(x));
+  });
+  var applicativeUI = new Prelude.Applicative(function () {
+      return applyUI;
+  }, function (x) {
+      return UI(Prelude["return"](Control_Monad_Eff.applicativeEff)(Prelude.pure(applicativeFlare)(x)));
+  });
+  var semiringUI = function (dictSemiring) {
+      return new Prelude.Semiring(Control_Apply.lift2(applyUI)(Prelude.add(dictSemiring)), Control_Apply.lift2(applyUI)(Prelude.mul(dictSemiring)), Prelude.pure(applicativeUI)(Prelude.one(dictSemiring)), Prelude.pure(applicativeUI)(Prelude.zero(dictSemiring)));
+  };
   exports["runFlareWith"] = runFlareWith;
   exports["lift"] = lift;
   exports["intSlider"] = intSlider;
   exports["numberSlider"] = numberSlider;
   exports["functorFlare"] = functorFlare;
   exports["applyFlare"] = applyFlare;
+  exports["applicativeFlare"] = applicativeFlare;
   exports["functorUI"] = functorUI;
-  exports["applyUI"] = applyUI;;
+  exports["applyUI"] = applyUI;
+  exports["applicativeUI"] = applicativeUI;
+  exports["semiringUI"] = semiringUI;;
  
 })(PS["Flare"] = PS["Flare"] || {});
 (function(exports) {
@@ -3437,7 +3461,9 @@ var PS = { };
   var gray = rgb(128.0)(128.0)(128.0);
   var colorString = function (v) {
       return "rgba(" + (Prelude.show(Prelude.showInt)(Data_Int.floor(v.value0)) + ("," + (Prelude.show(Prelude.showInt)(Data_Int.floor(v.value1)) + ("," + (Prelude.show(Prelude.showInt)(Data_Int.floor(v.value2)) + ("," + (Prelude.show(Prelude.showNumber)(v.value3) + ")")))))));
-  };
+  };                              
+  var black = rgb(0.0)(0.0)(0.0);
+  exports["black"] = black;
   exports["gray"] = gray;
   exports["lighten"] = lighten;
   exports["hsl"] = hsl;
@@ -3933,6 +3959,11 @@ var PS = { };
           };
       };
   };
+  var origin = {
+      x: 0.0, 
+      y: 0.0, 
+      z: 0.0
+  };
   var dot = function (v) {
       return function (v1) {
           return v.x * v1.x + v.y * v1.y + v.z * v1.z;
@@ -3973,6 +4004,7 @@ var PS = { };
   exports["norm"] = norm;
   exports["dot"] = dot;
   exports["vector"] = vector;
+  exports["origin"] = origin;
   exports["point"] = point;;
  
 })(PS["Graphics.Isometric.Point"] = PS["Graphics.Isometric.Point"] || {});
@@ -4146,8 +4178,7 @@ var PS = { };
   var Data_Foldable = PS["Data.Foldable"];
   var Data_Graph = PS["Data.Graph"];
   var Data_List = PS["Data.List"];
-  var Graphics_Isometric = PS["Graphics.Isometric"];
-  var Graphics_Isometric_Point = PS["Graphics.Isometric.Point"];     
+  var Graphics_Isometric = PS["Graphics.Isometric"];     
   var Vertex = (function () {
       function Vertex(value0, value1) {
           this.value0 = value0;
@@ -4237,11 +4268,11 @@ var PS = { };
                   if (Prelude.otherwise) {
                       return true;
                   };
-                  throw new Error("Failed pattern match at Graphics.Isometric.DepthSort line 54, column 1 - line 55, column 1: " + [  ]);
+                  throw new Error("Failed pattern match at Graphics.Isometric.DepthSort line 53, column 1 - line 54, column 1: " + [  ]);
               })();
               return decide;
           };
-          throw new Error("Failed pattern match at Graphics.Isometric.DepthSort line 54, column 1 - line 55, column 1: " + [ v.constructor.name, v1.constructor.name ]);
+          throw new Error("Failed pattern match at Graphics.Isometric.DepthSort line 53, column 1 - line 54, column 1: " + [ v.constructor.name, v1.constructor.name ]);
       };
   };
   var toGraph = function (scene) {
@@ -4352,8 +4383,8 @@ var PS = { };
   "use strict";
   var Prelude = PS["Prelude"];
   var Data_Array = PS["Data.Array"];
-  var Data_Int = PS["Data.Int"];
   var Data_Foldable = PS["Data.Foldable"];
+  var Data_Int = PS["Data.Int"];
   var Graphics_Isometric = PS["Graphics.Isometric"];
   var Graphics_Isometric_Point = PS["Graphics.Isometric.Point"];
   var Graphics_Isometric_DepthSort = PS["Graphics.Isometric.DepthSort"];
@@ -4361,9 +4392,10 @@ var PS = { };
   var Signal_DOM = PS["Signal.DOM"];
   var Flare = PS["Flare"];
   var Flare_Drawing = PS["Flare.Drawing"];
-  var Graphics_Drawing = PS["Graphics.Drawing"];
   var Graphics_Drawing_Color = PS["Graphics.Drawing.Color"];
+  var Graphics_Drawing = PS["Graphics.Drawing"];
   var Control_Monad_Eff = PS["Control.Monad.Eff"];     
+  var yellow = Graphics_Drawing_Color.hsl(40.0)(0.9)(0.6);
   var scene1 = function (n) {
       return function (offset) {
           var dl = 230.0 / Data_Int.toNumber(n);
@@ -4376,18 +4408,35 @@ var PS = { };
               return Prelude.bind(Prelude.bindArray)(Data_Array[".."](0)(n))(function (v1) {
                   var y = Data_Int.toNumber(v1) / Data_Int.toNumber(n);
                   var x = Data_Int.toNumber(v) / Data_Int.toNumber(n);
-                  var p1 = {
+                  var pos = {
                       x: dl * Data_Int.toNumber(v), 
                       y: dl * Data_Int.toNumber(v1), 
                       z: 0.0
                   };
                   var h = 2.0 * dl + 1.5 * dl * $$Math.sin($$Math.pi * x + offset) * $$Math.cos($$Math.pi * y + offset);
-                  return Prelude["return"](Prelude.applicativeArray)(Graphics_Isometric.filled(Graphics_Drawing_Color.hsl(300.0 * x)(0.5)(0.5))(Graphics_Isometric.prism(p1)(w)(w)(h)));
+                  return Prelude["return"](Prelude.applicativeArray)(Graphics_Isometric.filled(Graphics_Drawing_Color.hsl(300.0 * x)(0.5)(0.5))(Graphics_Isometric.prism(pos)(w)(w)(h)));
               });
           }))));
       };
   };
-  var red$prime = Graphics_Drawing_Color.hsl(0.0)(0.6)(0.5);
+  var red = Graphics_Drawing_Color.hsl(0.0)(0.6)(0.5);
+  var scene4 = function (theta) {
+      return function (phi) {
+          var move = Prelude[">>>"](Prelude.semigroupoidFn)(Graphics_Isometric.rotateZ(0.4))(Prelude[">>>"](Prelude.semigroupoidFn)(Graphics_Isometric.translateY(1.1))(Graphics_Isometric.translateX(0.3)));
+          var lz = $$Math.cos(theta);
+          var ly = $$Math.sin(theta) * $$Math.sin(phi);
+          var lx = $$Math.sin(theta) * $$Math.cos(phi);
+          return Graphics_Drawing.translate(250.0)(200.0)(Graphics_Isometric.renderScene({
+              x: lx, 
+              y: ly, 
+              z: lz
+          })(Graphics_Isometric.scale(150.0)(Prelude["<>"](Graphics_Isometric.semigroupScene)(Graphics_Isometric.filled(yellow)(Graphics_Isometric.cube({
+              x: 1.4 * lx, 
+              y: 1.4 * ly, 
+              z: 1.4 * lz
+          })(5.0e-2)))(Prelude["<>"](Graphics_Isometric.semigroupScene)(Graphics_Isometric.filled(Graphics_Drawing_Color.black)(Graphics_Isometric.cube(Graphics_Isometric_Point.origin)(1.0)))(move(Graphics_Isometric.filled(red)(Graphics_Isometric.cube(Graphics_Isometric_Point.origin)(0.4))))))));
+      };
+  };
   var p = function (x) {
       return function (y) {
           return function (z) {
@@ -4399,16 +4448,7 @@ var PS = { };
           };
       };
   };
-  var scene3 = function (angle) {
-      return Graphics_Drawing.translate(300.0)(150.0)(Graphics_Isometric.renderScene({
-          x: -4.0, 
-          y: -1.0, 
-          z: 3.0
-      })(Graphics_Isometric.scale(45.0)(Graphics_Isometric.rotateZ(angle)(Data_Foldable.foldMap(Data_Foldable.foldableArray)(Graphics_Isometric.monoidScene)(function (pos) {
-          return Graphics_Isometric.filled(Graphics_Drawing_Color.hsl(210.0)(0.8)(0.5))(Graphics_Isometric.cube(pos)(1.0));
-      })([ p(1)(1)(0), p(1)(2)(0), p(1)(3)(0), p(2)(3)(0), p(3)(3)(0), p(0)(-2)(0), p(1)(-2)(0), p(2)(-2)(0), p(3)(-2)(0), p(3)(-1)(0), p(4)(-1)(0), p(5)(-1)(0), p(5)(-1)(0), p(5)(0)(0), p(4)(2)(0), p(5)(1)(0), p(5)(2)(0), p(4)(3)(0), p(1)(0)(1), p(1)(1)(1) ])))));
-  };
-  var green$prime = Graphics_Drawing_Color.hsl(110.0)(0.6)(0.5);
+  var green = Graphics_Drawing_Color.hsl(110.0)(0.6)(0.5);
   var scene2 = function (rotZ) {
       return function (time) {
           var pos2 = 3.0 * $$Math.sin(1.0e-3 * time) - 0.5;
@@ -4417,20 +4457,34 @@ var PS = { };
               x: -4.0, 
               y: -1.0, 
               z: 3.0
-          })(Graphics_Isometric.scale(45.0)(Graphics_Isometric_DepthSort.depthSort(Graphics_Isometric.rotateZ(rotZ)(Prelude["<>"](Graphics_Isometric.semigroupScene)(Graphics_Isometric.filled(Graphics_Drawing_Color.gray)(Graphics_Isometric.prism(Graphics_Isometric_Point.point(-3.5)(-3.5)(-0.5))(7.0)(7.0)(0.5)))(Prelude["<>"](Graphics_Isometric.semigroupScene)(Graphics_Isometric.filled(green$prime)(Graphics_Isometric.prism(Graphics_Isometric_Point.point(-1.0)(pos1)(0.0))(2.0)(1.0)(2.0)))(Graphics_Isometric.filled(red$prime)(Graphics_Isometric.prism(Graphics_Isometric_Point.point(pos2)(-1.0)(0.0))(1.0)(2.0)(2.0)))))))));
+          })(Graphics_Isometric.scale(45.0)(Graphics_Isometric_DepthSort.depthSort(Graphics_Isometric.rotateZ(rotZ)(Prelude["<>"](Graphics_Isometric.semigroupScene)(Graphics_Isometric.filled(Graphics_Drawing_Color.gray)(Graphics_Isometric.prism(Graphics_Isometric_Point.point(-3.5)(-3.5)(-0.5))(7.0)(7.0)(0.5)))(Prelude["<>"](Graphics_Isometric.semigroupScene)(Graphics_Isometric.filled(green)(Graphics_Isometric.prism(Graphics_Isometric_Point.point(-1.0)(pos1)(0.0))(2.0)(1.0)(2.0)))(Graphics_Isometric.filled(red)(Graphics_Isometric.prism(Graphics_Isometric_Point.point(pos2)(-1.0)(0.0))(1.0)(2.0)(2.0)))))))));
       };
+  };
+  var blue = Graphics_Drawing_Color.hsl(210.0)(0.8)(0.5);
+  var scene3 = function (angle) {
+      return Graphics_Drawing.translate(300.0)(150.0)(Graphics_Isometric.renderScene({
+          x: -4.0, 
+          y: -1.0, 
+          z: 3.0
+      })(Graphics_Isometric.scale(45.0)(Graphics_Isometric.rotateZ(angle)(Data_Foldable.foldMap(Data_Foldable.foldableArray)(Graphics_Isometric.monoidScene)(function (pos) {
+          return Graphics_Isometric.filled(blue)(Graphics_Isometric.cube(pos)(1.0));
+      })([ p(1)(1)(0), p(1)(2)(0), p(1)(3)(0), p(2)(3)(0), p(3)(3)(0), p(0)(-2)(0), p(1)(-2)(0), p(2)(-2)(0), p(3)(-2)(0), p(3)(-1)(0), p(4)(-1)(0), p(5)(-1)(0), p(5)(-1)(0), p(5)(0)(0), p(4)(2)(0), p(5)(1)(0), p(5)(2)(0), p(4)(3)(0), p(1)(0)(1), p(1)(1)(1) ])))));
   };
   var main = function __do() {
       Flare_Drawing.runFlareDrawing("controls1")("canvas1")(Prelude["<*>"](Flare.applyUI)(Prelude["<$>"](Flare.functorUI)(scene1)(Flare.intSlider("Points")(4)(10)(8)))(Flare.numberSlider("Wave")(0.0)(2.0 * $$Math.pi)(1.0e-2)(0.0)))();
       Flare_Drawing.runFlareDrawing("controls2")("canvas2")(Prelude["<*>"](Flare.applyUI)(Prelude["<$>"](Flare.functorUI)(scene2)(Flare.numberSlider("Rotation")(0.0)(2.0 * $$Math.pi)(0.1)(0.0)))(Flare.lift(Signal_DOM.animationFrame)))();
-      return Flare_Drawing.runFlareDrawing("controls3")("canvas3")(Prelude["<$>"](Flare.functorUI)(scene3)(Flare.numberSlider("Rotation")(-0.25 * $$Math.pi)(0.25 * $$Math.pi)(1.0e-2)(0.0)))();
+      Flare_Drawing.runFlareDrawing("controls3")("canvas3")(Prelude["<$>"](Flare.functorUI)(scene3)(Flare.numberSlider("Rotation")(-0.25 * $$Math.pi)(0.25 * $$Math.pi)(1.0e-2)(0.0)))();
+      return Flare_Drawing.runFlareDrawing("controls4")("canvas4")(Prelude["<*>"](Flare.applyUI)(Prelude["<$>"](Flare.functorUI)(scene4)(Prelude["*"](Flare.semiringUI(Prelude.semiringNumber))(Prelude.pure(Flare.applicativeUI)(1.5e-3))(Flare.lift(Signal_DOM.animationFrame))))(Prelude.pure(Flare.applicativeUI)(-$$Math.pi / 3.0)))();
   };
   exports["main"] = main;
+  exports["scene4"] = scene4;
+  exports["yellow"] = yellow;
   exports["scene3"] = scene3;
+  exports["blue"] = blue;
   exports["p"] = p;
   exports["scene2"] = scene2;
-  exports["green'"] = green$prime;
-  exports["red'"] = red$prime;
+  exports["green"] = green;
+  exports["red"] = red;
   exports["scene1"] = scene1;;
  
 })(PS["Test.Main"] = PS["Test.Main"] || {});
