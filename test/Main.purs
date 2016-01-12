@@ -51,6 +51,23 @@ scene2 rotZ time =
     pos1 = 3.0 * cos (0.001 * time) + 0.5
     pos2 = 3.0 * sin (0.001 * time) + 0.5
 
+-- Example 3
+
+p :: Int -> Int -> Int -> Point
+p x y z = { x: toNumber x, y: toNumber y, z: toNumber z }
+
+scene3 :: Number -> D.Drawing
+scene3 angle =
+  D.translate 300.0 300.0 $
+    renderScene { x: -4.0, y: -1.0, z: 3.0 } $
+      scale 45.0 $ rotateZ angle $
+        foldMap (\pos -> filled (hsl 210.0 0.8 0.5) (cube pos 1.0))
+          [ p 1 1 0 , p 1 2 0 , p 1 3 0 , p 2 3 0
+          , p 3 3 0 , p 0 (-2) 0 , p 1 (-2) 0 , p 2 (-2) 0
+          , p 3 (-2) 0 , p 3 (-1) 0 , p 4 (-1) 0 , p 5 (-1) 0
+          , p 5 (-1) 0 , p 5 0 0 , p 4 2 0 , p 5 1 0
+          , p 5 2 0 , p 4 3 0 , p 1 0 1 , p 1 1 1
+          ]
 
 main = do
   D.runFlareDrawing "controls1" "canvas1" $
@@ -61,3 +78,6 @@ main = do
   D.runFlareDrawing "controls2" "canvas2" $
     scene2 <$> numberSlider "Rotation" 0.0 (2.0 * pi) 0.1 0.0
            <*> lift animationFrame
+
+  D.runFlareDrawing "controls3" "canvas3" $
+    scene3 <$> numberSlider "Rotation" (-0.25 * pi) (0.25 * pi) 0.01 0.0
