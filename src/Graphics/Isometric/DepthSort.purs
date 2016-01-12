@@ -4,16 +4,15 @@ module Graphics.Isometric.DepthSort
 
 import Prelude
 
-import Control.MonadPlus
+import Control.MonadPlus (guard)
 
 import Data.Array as A
 import Data.Maybe.Unsafe (fromJust)
-import Data.Foldable
-import Data.Graph
-import Data.List
+import Data.Foldable (foldMap, maximum, minimum)
+import Data.Graph (Edge(Edge), Graph(Graph), topSort)
+import Data.List (List, length, (..), zipWith, singleton)
 
-import Graphics.Isometric
-import Graphics.Isometric.Point (depth)
+import Graphics.Isometric (Shape, Scene(Fill, Many))
 
 data Vertex = Vertex Int Scene
 

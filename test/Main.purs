@@ -2,19 +2,20 @@ module Test.Main where
 
 import Prelude
 
-import Data.Array
-import Data.Int
-import Data.Foldable
+import Data.Array ((..))
+import Data.Foldable (foldMap, fold)
+import Data.Int (toNumber)
 
-import Graphics.Isometric
+import Graphics.Isometric (Point, Color, cube, hsl, filled, rotateZ, scale,
+                           renderScene, prism, gray)
 import Graphics.Isometric.Point as P
-import Graphics.Isometric.DepthSort
+import Graphics.Isometric.DepthSort (depthSort)
 
 import Math (sin, cos, pi)
 
-import Signal.DOM
+import Signal.DOM (animationFrame)
 
-import Flare
+import Flare (numberSlider, lift, intSlider)
 import Flare.Drawing as D
 
 -- Example 1
@@ -28,25 +29,28 @@ scene1 n offset =
         j <- 0..n
         let x = toNumber i / toNumber n
             y = toNumber j / toNumber n
-            p = { x: dl * toNumber i, y: dl * toNumber j, z: 0.0 }
+            pos = { x: dl * toNumber i, y: dl * toNumber j, z: 0.0 }
             h = 2.0 * dl + 1.5 * dl * sin (pi * x + offset) * cos (pi * y + offset)
-        return $ filled (D.hsl (300.0 * x) 0.5 0.5) (prism p w w h)
+        return $ filled (D.hsl (300.0 * x) 0.5 0.5) (prism pos w w h)
   where dl = 230.0 / toNumber n
         w = 0.9 * dl
 
 -- Example 2
 
-red'   = hsl 0.0 0.6 0.5
-green' = hsl 110.0 0.6 0.5
+red :: Color
+red   = hsl 0.0 0.6 0.5
+
+green :: Color
+green = hsl 110.0 0.6 0.5
 
 scene2 :: Number -> Number -> D.Drawing
 scene2 rotZ time =
   D.translate 250.0 200.0 $
     renderScene { x: -4.0, y: -1.0, z: 3.0 } $
       scale 45.0 $ depthSort $ rotateZ rotZ $
-           filled gray   (prism (P.point (-3.5) (-3.5) (-0.5)) 7.0 7.0 0.5)
-        <> filled green' (prism (P.point (-1.0) pos1 0.0) 2.0 1.0 2.0)
-        <> filled red'   (prism (P.point pos2 (-1.0) 0.0) 1.0 2.0 2.0)
+           filled gray  (prism (P.point (-3.5) (-3.5) (-0.5)) 7.0 7.0 0.5)
+        <> filled green (prism (P.point (-1.0) pos1 0.0) 2.0 1.0 2.0)
+        <> filled red   (prism (P.point pos2 (-1.0) 0.0) 1.0 2.0 2.0)
   where
     pos1 = 3.0 * cos (0.001 * time) - 0.5
     pos2 = 3.0 * sin (0.001 * time) - 0.5
