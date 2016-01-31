@@ -176,3 +176,44 @@ Render a three-dimensional `Scene` into a two-dimensional `Drawing`, using
 an isometric projection. The vector determines the direction of light.
 
 
+### Re-exported from Graphics.Drawing.Color:
+
+#### `Color`
+
+``` purescript
+data Color
+```
+
+Colors.
+
+##### Instances
+``` purescript
+Eq Color
+```
+
+### Re-exported from Graphics.Isometric.Types:
+
+#### `Angle`
+
+``` purescript
+type Angle = Number
+```
+
+An angle in radians.
+
+#### `Point`
+
+``` purescript
+type Point = { x :: Number, y :: Number, z :: Number }
+```
+
+A 3D point.
+
+#### `Vector`
+
+``` purescript
+type Vector = Point
+```
+
+A vector or direction.
+

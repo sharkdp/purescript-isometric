@@ -6,9 +6,9 @@ import Data.Array ((..))
 import Data.Foldable (foldMap, fold)
 import Data.Int (toNumber)
 
-import Graphics.Isometric (Point, Color, cube, hsl, filled, rotateZ, scale,
-                           renderScene, prism, pyramid3, gray, black, translateX,
-                           translateY, cylinder, cone)
+import Graphics.Drawing.Color (hsl, gray)
+import Graphics.Isometric (Point, Color, cube, filled, rotateZ, scale,
+                           renderScene, prism, translateX, translateY, cone)
 import Graphics.Isometric.Point as P
 import Graphics.Isometric.DepthSort (depthSort)
 

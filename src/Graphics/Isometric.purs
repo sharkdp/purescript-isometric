@@ -19,8 +19,8 @@ module Graphics.Isometric
   , scale
   , filled
   , renderScene
-  , module Graphics.Drawing.Color
   , module Graphics.Isometric.Types
+  , module ColorType
   ) where
 
 import Prelude
@@ -36,12 +36,13 @@ import Data.Ord (comparing)
 import Math (pi, asin, sqrt, sin, cos)
 
 import Graphics.Drawing as TwoD
-import Graphics.Drawing.Color
+import Graphics.Drawing.Color (Color, lighten)
+import Graphics.Drawing.Color (Color) as ColorType
 
 import Graphics.Isometric.Point (point, vector, dot, normalize, cross, depth,
                                  from2D)
 import Graphics.Isometric.Point as P
-import Graphics.Isometric.Types
+import Graphics.Isometric.Types (Angle, Point, Vector)
 
 -- | A `Face` is a list of (at least) three points which all lie in a plane.
 type Face = Array Point
