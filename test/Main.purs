@@ -6,9 +6,10 @@ import Data.Array ((..))
 import Data.Foldable (foldMap, fold)
 import Data.Int (toNumber)
 
-import Graphics.Drawing.Color (hsl, gray)
-import Graphics.Isometric (Point, Color, cube, filled, rotateZ, scale,
-                           renderScene, prism, translateX, translateY, cone)
+import Color (darken)
+import Color.Scheme.MaterialDesign (blue, red, purple, pink, yellow, grey)
+import Graphics.Isometric (Point, cube, filled, rotateZ, scale, renderScene,
+                           prism, translateX, translateY, cone)
 import Graphics.Isometric.Point as P
 import Graphics.Isometric.DepthSort (depthSort)
 
@@ -38,20 +39,14 @@ scene1 n offset =
 
 -- Example 2
 
-red :: Color
-red   = hsl 0.0 0.6 0.5
-
-green :: Color
-green = hsl 110.0 0.6 0.5
-
 scene2 :: Number -> Number -> D.Drawing
 scene2 rotZ time =
   D.translate 250.0 200.0 $
     renderScene { x: -4.0, y: -1.0, z: 3.0 } $
       scale 45.0 $ depthSort $ rotateZ rotZ $
-           filled gray  (prism (P.point (-3.5) (-3.5) (-0.5)) 7.0 7.0 0.5)
-        <> filled green (prism (P.point (-1.0) pos1 0.0) 2.0 1.0 2.0)
-        <> filled red   (prism (P.point pos2 (-1.0) 0.0) 1.0 2.0 2.0)
+           filled grey   (prism (P.point (-3.5) (-3.5) (-0.5)) 7.0 7.0 0.5)
+        <> filled purple (prism (P.point (-1.0) pos1 0.0) 2.0 1.0 2.0)
+        <> filled red    (prism (P.point pos2 (-1.0) 0.0) 1.0 2.0 2.0)
   where
     pos1 = 3.0 * cos (0.001 * time) - 0.5
     pos2 = 3.0 * sin (0.001 * time) - 0.5
@@ -60,9 +55,6 @@ scene2 rotZ time =
 
 p :: Int -> Int -> Int -> Point
 p x y z = { x: toNumber x, y: toNumber y, z: toNumber z }
-
-blue :: Color
-blue = hsl 210.0 0.8 0.5
 
 scene3 :: Number -> D.Drawing
 scene3 angle =
@@ -79,19 +71,13 @@ scene3 angle =
 
 -- Example 4
 
-magenta :: Color
-magenta = hsl 320.0 0.8 0.30
-
-yellow :: Color
-yellow = hsl 40.0 0.9 0.6
-
 scene4 :: Number -> D.Drawing
 scene4 phi =
   D.translate 250.0 200.0 $
     renderScene { x: lx, y: ly, z: lz } $
       scale 150.0 $
-        filled magenta (cone P.origin 20 1.0 1.5)
-        <> move (filled blue (cube P.origin 0.4))
+        filled pink' (cone P.origin 20 1.0 1.5)
+        <> move (filled red (cube P.origin 0.4))
         <> filled yellow (cube { x: r * lx, y: r * ly, z: r * lz } 0.05)
   where
     theta = pi / 3.0
@@ -100,6 +86,7 @@ scene4 phi =
     lz = cos theta
     r = 1.4
     move = rotateZ 0.4 >>> translateY 1.1 >>> translateX 0.3
+    pink' = darken 0.2 pink
 
 main = do
   D.runFlareDrawing "controls1" "canvas1" $

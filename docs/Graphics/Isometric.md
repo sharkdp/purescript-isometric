@@ -176,7 +176,7 @@ Render a three-dimensional `Scene` into a two-dimensional `Drawing`, using
 an isometric projection. The vector determines the direction of light.
 
 
-### Re-exported from Graphics.Drawing.Color:
+### Re-exported from Color:
 
 #### `Color`
 
@@ -184,10 +184,11 @@ an isometric projection. The vector determines the direction of light.
 data Color
 ```
 
-Colors.
+The representation of a color.
 
 ##### Instances
 ``` purescript
+Show Color
 Eq Color
 ```
 

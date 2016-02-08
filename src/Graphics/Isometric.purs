@@ -36,8 +36,8 @@ import Data.Ord (comparing)
 import Math (pi, asin, sqrt, sin, cos)
 
 import Graphics.Drawing as TwoD
-import Graphics.Drawing.Color (Color, lighten)
-import Graphics.Drawing.Color (Color) as ColorType
+import Color (Color, lighten)
+import Color (Color) as ColorType
 
 import Graphics.Isometric.Point (point, vector, dot, normalize, cross, depth,
                                  from2D)
@@ -177,14 +177,14 @@ project p = { x: - rotated.x, y: rotated.y }
 
 -- | Render a single 3D face.
 renderFace :: Vector -> Color -> Face -> TwoD.Drawing
-renderFace dir color face = TwoD.filled (TwoD.fillColor col) $
-                              TwoD.closed (project <$> face)
+renderFace dir color face = TwoD.filled (TwoD.fillColor col) path
   where col = lighten amount color
-        amount = 0.2 + 0.2 * dir `dot` normal
+        amount = 0.2 * dir `dot` normal
         normal = normalize ((vector p1 p2) `cross` (vector p1 p3))
         p1 = unsafeIndex face 0
         p2 = unsafeIndex face 1
         p3 = unsafeIndex face 2
+        path = TwoD.closed (project <$> face)
 
 -- | Render a 3D shape with a given fill color.
 fillShape :: Vector -> Color -> Shape -> TwoD.Drawing
