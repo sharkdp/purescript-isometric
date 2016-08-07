@@ -6,7 +6,7 @@ import Data.Array ((..))
 import Data.Foldable (foldMap, fold)
 import Data.Int (toNumber)
 
-import Color (darken)
+import Color (Color, darken)
 import Color.Scheme.MaterialDesign (blue, red, purple, pink, yellow, grey)
 import Graphics.Isometric (Point, cube, filled, rotateZ, scale, renderScene,
                            prism, translateX, translateY, cone)
@@ -17,7 +17,7 @@ import Math (sin, cos, pi)
 
 import Signal.DOM (animationFrame)
 
-import Flare (numberSlider, lift, intSlider)
+import Flare (numberSlider, lift, intSlider, color)
 import Flare.Drawing as D
 
 -- Example 1
@@ -33,9 +33,10 @@ scene1 n offset =
             y = toNumber j / toNumber n
             pos = { x: dl * toNumber i, y: dl * toNumber j, z: 0.0 }
             h = 2.0 * dl + 1.5 * dl * sin (pi * x + offset) * cos (pi * y + offset)
-        return $ filled (D.hsl (300.0 * x) 0.5 0.5) (prism pos w w h)
+        pure $ filled (D.hsl (300.0 * x) 0.5 0.5) (prism pos w w h)
   where dl = 230.0 / toNumber n
         w = 0.9 * dl
+
 
 -- Example 2
 
@@ -50,6 +51,7 @@ scene2 rotZ time =
   where
     pos1 = 3.0 * cos (0.001 * time) - 0.5
     pos2 = 3.0 * sin (0.001 * time) - 0.5
+
 
 -- Example 3
 
@@ -69,15 +71,16 @@ scene3 angle =
           , p 5 2 0 , p 4 3 0 , p 1 0 1 , p 1 1 1
           ]
 
+
 -- Example 4
 
-scene4 :: Number -> D.Drawing
-scene4 phi =
+scene4 :: Color -> Color -> Number -> D.Drawing
+scene4 coneColor cubeColor phi =
   D.translate 250.0 200.0 $
     renderScene { x: lx, y: ly, z: lz } $
       scale 150.0 $
-        filled pink' (cone P.origin 20 1.0 1.5)
-        <> move (filled red (cube P.origin 0.4))
+        filled coneColor (cone P.origin 20 1.0 1.5)
+        <> move (filled cubeColor (cube P.origin 0.4))
         <> filled yellow (cube { x: r * lx, y: r * ly, z: r * lz } 0.05)
   where
     theta = pi / 3.0
@@ -86,7 +89,7 @@ scene4 phi =
     lz = cos theta
     r = 1.4
     move = rotateZ 0.4 >>> translateY 1.1 >>> translateX 0.3
-    pink' = darken 0.2 pink
+
 
 main = do
   D.runFlareDrawing "controls1" "canvas1" $
@@ -101,4 +104,6 @@ main = do
     scene3 <$> numberSlider "Rotation" (-0.25 * pi) (0.25 * pi) 0.01 0.0
 
   D.runFlareDrawing "controls4" "canvas4" $
-    scene4 <$> (pure 0.0015 * lift animationFrame)
+    scene4 <$> color "Cone color" (darken 0.2 pink)
+           <*> color "Cube color" red
+           <*> ((*) <$> pure 0.0015 <*> lift animationFrame)

@@ -6,11 +6,12 @@ import Prelude
 
 import Control.MonadPlus (guard)
 
-import Data.Array as A
-import Data.Maybe.Unsafe (fromJust)
+import Data.List.ThreeOrMore (toList)
+import Data.Maybe (fromJust)
 import Data.Foldable (foldMap, maximum, minimum)
 import Data.Graph (Edge(Edge), Graph(Graph), topSort)
-import Data.List (List, length, (..), zipWith, singleton)
+import Data.List (List, length, (..), zipWith, singleton, concat)
+import Partial.Unsafe (unsafePartial)
 
 import Graphics.Isometric (Shape, Scene(Fill, Many))
 
@@ -42,15 +43,16 @@ bounds :: Shape -> Bounds
 bounds shape = { minX: min' cX, maxX: max' cX
                , minY: min' cY, maxY: max' cY
                , minZ: min' cZ, maxZ: max' cZ }
-  where coords = A.concat shape
-        cX = _.x <$> coords
-        cY = _.y <$> coords
-        cZ = _.z <$> coords
-        min' = fromJust <<< minimum
-        max' = fromJust <<< maximum
+  where
+    coords = concat (toList <$> shape)
+    cX = _.x <$> coords
+    cY = _.y <$> coords
+    cZ = _.z <$> coords
+    min' = unsafePartial (fromJust <<< minimum)
+    max' = unsafePartial (fromJust <<< maximum)
 
 -- | Check if two vertices/shapes overlap and determine the depth ordering.
-isBehind :: Vertex -> Vertex -> Boolean
+isBehind :: Partial => Vertex -> Vertex -> Boolean
 isBehind (Vertex _ (Fill _ s1)) (Vertex _ (Fill _ s2)) = decide
   where
     b1 = bounds s1
@@ -77,8 +79,8 @@ toGraph scene = Graph vertices edges
     edges = do
       i <- vertices
       j <- vertices
-      guard $ i `isBehind` j
-      return (Edge i j)
+      guard $ unsafePartial (i `isBehind` j)
+      pure (Edge i j)
 
 -- | Transform a (sorted) list of vertices/shapes back to a 3D scene.
 toScene :: List Vertex -> Scene

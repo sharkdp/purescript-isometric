@@ -21,17 +21,18 @@ module Graphics.Isometric
   , renderScene
   , module Graphics.Isometric.Types
   , module ColorType
+  , module Data.List.ThreeOrMore
   ) where
 
 import Prelude
 
-import Data.Array (sortBy, cons, (..), reverse, zipWith)
-import Data.Array.Unsafe (unsafeIndex, last)
+{-- import Data.Array (sortBy, cons, (..), reverse, zipWith) --}
+import Data.List.ThreeOrMore (ThreeOrMore, last, reverse, toList)
 import Data.Foldable (foldMap, sum)
 import Data.Int (toNumber)
-import Data.List (List(..), singleton, (:))
+import Data.List (List(..), singleton, (:), (..), sortBy, zipWith)
 import Data.Monoid (class Monoid, mempty)
-import Data.Ord (comparing)
+import Data.NonEmpty ((:|))
 
 import Math (pi, asin, sqrt, sin, cos)
 
@@ -39,36 +40,51 @@ import Graphics.Drawing as TwoD
 import Color (Color, lighten)
 import Color (Color) as ColorType
 
-import Graphics.Isometric.Point (point, vector, dot, normalize, cross, depth,
-                                 from2D)
+import Graphics.Isometric.Point (vector, dot, normalize, cross, depth, from2D)
 import Graphics.Isometric.Point as P
 import Graphics.Isometric.Types (Angle, Point, Vector)
 
 -- | A `Face` is a list of (at least) three points which all lie in a plane.
-type Face = Array Point
+type Face = ThreeOrMore Point
 
 -- | A Shape consists of several `Face`s.
-type Shape = Array Face
+type Shape = List Face
 
 -- | Project a 2D path onto the xy plane and extrude it by the given height.
-extrude :: Array TwoD.Point -> Number -> Shape
-extrude path2D height = [bottom, reverse top] <> sides
-  where path = from2D <$> path2D
-        bottom = path
-        top = raise <$> bottom
-        sides = zipWith side path (last path `cons` path)
-        side p1 p2 = [p1, p2, raise p2, raise p1]
-        raise = P.translateZ height
+extrude :: ThreeOrMore TwoD.Point -> Number -> Shape
+extrude path2D height = bottom : reverse top : sides
+  where
+    path :: Face
+    path = from2D <$> path2D
+    bottom :: Face
+    bottom = path
+    top :: Face
+    top = raise <$> bottom
+    sides :: Shape
+    sides = zipWith side (toList path) (last path : toList path)
+    side :: Point -> Point -> Face
+    side p1 p2 = p1 :| p2 :| raise p2 :| raise p1 : Nil
+    raise = P.translateZ height
+
+{-- zipWith :: forall a b c --}
+{--          . (a -> b -> c) --}
+{--         -> ThreeOrMore a --}
+{--         -> ThreeOrMore b --}
+{--         -> ThreeOrMore c --}
+{-- zipWith fn (a1 :| a2 :| a3 :| as) (b1 :| b2 :| b3 :| bs) --}
+{--   = fn a1 b1 :| fn a2 b2 :|  fn a3 b3 :| List.zipWith fn as bs --}
+
 
 -- | Create a cone-like object by extruding the points from a base path in the
--- | xy plane to a single point above it.
-extrudeCone :: Array TwoD.Point -> Number -> Shape
-extrudeCone path2D height = bottom `cons` sides
-  where path = from2D <$> path2D
-        bottom = path
-        sides = zipWith side path (last path `cons` path)
-        side p1 p2 = [p1, p2, tip]
-        tip = { x: 0.0, y: 0.0, z: height }
+-- | xy plane to a single point above (or below) it.
+extrudeCone :: ThreeOrMore TwoD.Point -> Number -> Shape
+extrudeCone path2D height = bottom : sides
+  where
+    path = from2D <$> path2D
+    bottom = path
+    sides = zipWith side (toList path) (last path : toList path)
+    side p1 p2 = p1 :| p2 :| tip :| Nil
+    tip = { x: 0.0, y: 0.0, z: height }
 
 -- | Move a given shape by a vector.
 move :: Vector -> Shape -> Shape
@@ -78,21 +94,21 @@ move v = map (map (P.translate v))
 -- | depth (dimensions in x, y, and z-direction).
 prism :: Point -> Number -> Number -> Number -> Shape
 prism p dx dy dz = move p $ extrude rectangle dz
-  where rectangle = [ { x: 0.0, y: 0.0 }
-                    , { x: 0.0, y: dy  }
-                    , { x: dx,  y: dy  }
-                    , { x: dx,  y: 0.0 } ]
+  where rectangle = { x: 0.0, y: 0.0 } :|
+                    { x: 0.0, y: dy  } :|
+                    { x: dx,  y: dy  } :|
+                    { x: dx,  y: 0.0 } : Nil
 
 -- | A cube is a prism with three equal sides.
 cube :: Point -> Number -> Shape
 cube p dl = prism p dl dl dl
 
 -- | Draw a (2D) polygon with a given radius and number of vertices.
-polygon :: Int -> Number -> Array TwoD.Point
-polygon num r = do
-  j <- 0 .. (num - 1)
-  let phi = - 2.0 * pi / toNumber num * toNumber j
-  return { x: r * cos phi, y : r * sin phi }
+polygon :: Int -> Number -> ThreeOrMore TwoD.Point
+polygon num r = toPoint <$> (0 :| 1 :| 2 :| 3 .. (num - 1))
+  where
+    toPoint j = let phi = - 2.0 * pi / toNumber num * toNumber j
+                in { x: r * cos phi, y : r * sin phi }
 
 -- | A cone, determined by the center of the bottom face, the number of sides,
 -- | the radius and the height.
@@ -119,9 +135,9 @@ data Scene = Fill Color Shape
            | Many (List Scene)
 
 instance semigroupScene :: Semigroup Scene where
-  append (Many ss) s = Many (ss ++ singleton s)
+  append (Many ss) s = Many (ss <> singleton s)
   append s (Many ss) = Many (s : ss)
-  append s1 s2       = Many (Cons s1 (Cons s2 Nil))
+  append s1 s2       = Many (s1 : s2 : Nil)
 
 instance monoidScene :: Monoid Scene where
   mempty = Many mempty
@@ -177,13 +193,10 @@ project p = { x: - rotated.x, y: rotated.y }
 
 -- | Render a single 3D face.
 renderFace :: Vector -> Color -> Face -> TwoD.Drawing
-renderFace dir color face = TwoD.filled (TwoD.fillColor col) path
+renderFace dir color face@(p1 :| p2 :| p3 :| _) = TwoD.filled (TwoD.fillColor col) path
   where col = lighten amount color
         amount = 0.2 * dir `dot` normal
         normal = normalize ((vector p1 p2) `cross` (vector p1 p3))
-        p1 = unsafeIndex face 0
-        p2 = unsafeIndex face 1
-        p3 = unsafeIndex face 2
         path = TwoD.closed (project <$> face)
 
 -- | Render a 3D shape with a given fill color.
