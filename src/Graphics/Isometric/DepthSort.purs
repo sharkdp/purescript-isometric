@@ -4,13 +4,11 @@ module Graphics.Isometric.DepthSort
 
 import Prelude
 
-import Control.MonadPlus (guard)
-
 import Data.List.ThreeOrMore (toList)
 import Data.Maybe (fromJust)
 import Data.Foldable (foldMap, maximum, minimum)
-import Data.Graph (Edge(Edge), Graph(Graph), topSort)
-import Data.List (List, length, (..), zipWith, singleton, concat)
+import Data.Graph (Graph, unfoldGraph, topologicalSort)
+import Data.List (List, filter, length, (..), zipWith, singleton, concat)
 import Partial.Unsafe (unsafePartial)
 
 import Graphics.Isometric (Shape, Scene(Fill, Many))
@@ -69,18 +67,14 @@ isBehind (Vertex _ (Fill _ s1)) (Vertex _ (Fill _ s2)) = decide
 -- | Transform a 3D scene to a graph where the vertices are single objects
 -- | and the edges are `isBehind` relations.
 toGraph :: Scene -> DepthGraph
-toGraph scene = Graph vertices edges
+toGraph scene = unfoldGraph vertices id edges
   where
     addKey scene key = Vertex key scene
     addKeys list = zipWith addKey list (0 .. (length list - 1))
 
     vertices = addKeys (flatten scene)
 
-    edges = do
-      i <- vertices
-      j <- vertices
-      guard $ unsafePartial (i `isBehind` j)
-      pure (Edge i j)
+    edges i = filter (\j -> unsafePartial (i `isBehind` j)) vertices
 
 -- | Transform a (sorted) list of vertices/shapes back to a 3D scene.
 toScene :: List Vertex -> Scene
@@ -90,4 +84,4 @@ toScene vertices = foldMap dropIndex vertices
 -- | Sort the objects in a scene by depth such that they will be rendered
 -- | correctly.
 depthSort :: Scene -> Scene
-depthSort = toGraph >>> topSort >>> toScene
+depthSort = toGraph >>> topologicalSort >>> toScene
