@@ -16,13 +16,13 @@
     "url": "git://github.com/sharkdp/purescript-isometric.git"
   },
   "dependencies": {
-    "purescript-drawing": "^2.0.0",
-    "purescript-orders": "^2.0.0",
-    "purescript-graphs": "^2.0.0",
-    "purescript-colors": "^2.1.0",
-    "purescript-nonempty": "^3.0.0"
+    "purescript-drawing": "^3.0.0",
+    "purescript-orders": "^3.0.0",
+    "purescript-graphs": "^3.0.0",
+    "purescript-colors": "^3.0.0",
+    "purescript-nonempty": "^4.0.0"
   },
   "devDependencies": {
-    "purescript-flare": "^2.0.0"
+    "purescript-flare": "^3.0.0"
   }
 }
