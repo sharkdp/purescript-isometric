@@ -69,7 +69,7 @@ isBehind (Vertex _ (Fill _ s1)) (Vertex _ (Fill _ s2)) = decide
 toGraph :: Scene -> DepthGraph
 toGraph scene = unfoldGraph vertices id edges
   where
-    addKey scene key = Vertex key scene
+    addKey scene2 key = Vertex key scene2
     addKeys list = zipWith addKey list (0 .. (length list - 1))
 
     vertices = addKeys (flatten scene)

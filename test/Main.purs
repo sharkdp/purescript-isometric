@@ -20,6 +20,12 @@ import Signal.DOM (animationFrame)
 import Flare (numberSlider, lift, intSlider, color)
 import Flare.Drawing as D
 
+import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Timer (TIMER)
+import DOM (DOM)
+import Signal.Channel (CHANNEL)
+import Graphics.Canvas (CANVAS)
+
 -- Example 1
 
 scene1 :: Int -> Number -> D.Drawing
@@ -91,6 +97,15 @@ scene4 coneColor cubeColor phi =
     move = rotateZ 0.4 >>> translateY 1.1 >>> translateX 0.3
 
 
+main :: forall a.
+      Eff
+        ( dom :: DOM
+        , channel :: CHANNEL
+        , canvas :: CANVAS
+        , timer :: TIMER
+        | a
+        )
+        Unit
 main = do
   D.runFlareDrawing "controls1" "canvas1" $
     scene1 <$> intSlider "Points" 4 10 8
