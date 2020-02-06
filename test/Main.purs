@@ -6,7 +6,7 @@ import Data.Array ((..))
 import Data.Foldable (foldMap, fold)
 import Data.Int (toNumber)
 
-import Color (Color, darken)
+import Color (Color, darken, hsl)
 import Color.Scheme.MaterialDesign (blue, red, purple, pink, yellow, grey)
 import Graphics.Isometric (Point, cube, filled, rotateZ, scale, renderScene,
                            prism, translateX, translateY, cone)
@@ -19,6 +19,8 @@ import Signal.DOM (animationFrame)
 
 import Flare (numberSlider, lift, intSlider, color)
 import Flare.Drawing as D
+
+import Effect (Effect)
 
 -- Example 1
 
@@ -33,7 +35,7 @@ scene1 n offset =
             y = toNumber j / toNumber n
             pos = { x: dl * toNumber i, y: dl * toNumber j, z: 0.0 }
             h = 2.0 * dl + 1.5 * dl * sin (pi * x + offset) * cos (pi * y + offset)
-        pure $ filled (D.hsl (300.0 * x) 0.5 0.5) (prism pos w w h)
+        pure $ filled (hsl (300.0 * x) 0.5 0.5) (prism pos w w h)
   where dl = 230.0 / toNumber n
         w = 0.9 * dl
 
@@ -91,6 +93,7 @@ scene4 coneColor cubeColor phi =
     move = rotateZ 0.4 >>> translateY 1.1 >>> translateX 0.3
 
 
+main :: Effect Unit
 main = do
   D.runFlareDrawing "controls1" "canvas1" $
     scene1 <$> intSlider "Points" 4 10 8

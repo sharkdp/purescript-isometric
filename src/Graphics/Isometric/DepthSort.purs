@@ -67,9 +67,9 @@ isBehind (Vertex _ (Fill _ s1)) (Vertex _ (Fill _ s2)) = decide
 -- | Transform a 3D scene to a graph where the vertices are single objects
 -- | and the edges are `isBehind` relations.
 toGraph :: Scene -> DepthGraph
-toGraph scene = unfoldGraph vertices id edges
+toGraph scene = unfoldGraph vertices identity edges
   where
-    addKey scene key = Vertex key scene
+    addKey scene2 key = Vertex key scene2
     addKeys list = zipWith addKey list (0 .. (length list - 1))
 
     vertices = addKeys (flatten scene)
