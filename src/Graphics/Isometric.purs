@@ -31,7 +31,6 @@ import Data.List.ThreeOrMore (ThreeOrMore, last, reverse, toList)
 import Data.Foldable (foldMap, sum)
 import Data.Int (toNumber)
 import Data.List (List(..), singleton, (:), (..), sortBy, zipWith)
-import Data.Monoid (class Monoid, mempty)
 import Data.NonEmpty ((:|))
 
 import Math (pi, asin, sqrt, sin, cos)
